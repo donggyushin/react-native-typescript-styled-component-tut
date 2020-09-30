@@ -8,11 +8,12 @@
  * @format
  */
 
-import React, {useState} from 'react';
+import {Appearance, StatusBar} from 'react-native';
+import React, {useEffect, useState} from 'react';
 import {darkTheme, lightTheme} from './src/styles/theme';
 import styled, {ThemeProvider} from 'styled-components/native';
 
-import {StatusBar} from 'react-native';
+import {eventEmitter} from 'react-native-dark-mode';
 
 declare const global: {HermesInternal: null | {}};
 
@@ -53,6 +54,23 @@ type ThemeType = 'light' | 'dark';
 const App = () => {
   const [themeState, setThemeState] = useState<ThemeType>('light');
 
+  useEffect(() => {
+    if (Appearance.getColorScheme() === 'dark') {
+      setThemeState('dark');
+    } else {
+      setThemeState('light');
+    }
+
+    eventEmitter.on('currentModeChanged', (newMode) => {
+      console.log(`Switched to ${newMode} mode`);
+      if (newMode === 'dark') {
+        setThemeState('dark');
+      } else {
+        setThemeState('light');
+      }
+    });
+  });
+
   return (
     <>
       <StatusBar
@@ -63,15 +81,6 @@ const App = () => {
           <TextContainer>
             <Title>Themed App with React Native & Styled Components</Title>
           </TextContainer>
-          {themeState === 'light' ? (
-            <Button onPress={() => setThemeState('dark')}>
-              <ButtonText>Switch to Dark Theme</ButtonText>
-            </Button>
-          ) : (
-            <Button onPress={() => setThemeState('light')}>
-              <ButtonText>Switch to Light Theme</ButtonText>
-            </Button>
-          )}
         </Container>
       </ThemeProvider>
     </>
